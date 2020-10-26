@@ -5,7 +5,7 @@ import { Button, ThemeProvider, Header, Icon } from 'react-native-elements';
 import PinchableBox from './PinchableBox';
 import ColorPicker from './ColorPicker';
 import CardViewer from './CardViewer';
-import { postData } from './connector.js';
+import { postData, postImage } from './connector.js';
 import * as ImagePicker from 'expo-image-picker';
 import Constants from 'expo-constants';
 import * as Permissions from 'expo-permissions';
@@ -52,7 +52,7 @@ export class Blob extends React.Component {
   counter = 1;
   constructor(props){
     super(props);
-    console.log(uuidv4());
+    //console.log(uuidv4());
     this.value = null;
     this.selected = null;
     this.selectedPage = 0;
@@ -703,9 +703,26 @@ export class Blob extends React.Component {
               this.selectedPage = 0;
             }
 
-            post = () => {
+            post = async () => {
               var prox = uuidv4();
               console.log(prox);
+              for(var i = 0; i < this.compArray.length; i++){
+                for(var j = 0; j < this.compArray[i].compArray.length; j++){
+                  switch(this.compArray[i].compArray[j].type){
+                    case 'image':
+                      if(typeof this.compArray[i].compArray[j].base64 != 'undefined'){
+
+                          var result = await postImage(this.compArray[i].compArray[j].base64);
+
+                          var src = await result.data.link;
+                          this.compArray[i].compArray[j].source = await src;
+                          delete this.compArray[i].compArray[j].base64;
+
+                      }
+                      break;
+                  }
+                }
+              }
               postData(prox, this.compArray);
             }
 
@@ -714,8 +731,8 @@ export class Blob extends React.Component {
               //console.log(this.toolbar);
               this.selectedPage = a;
               this.setState({selectedPage: this.selectedPage})
-              console.log('selected page');
-              console.log(this.selectedPage);
+            //  console.log('selected page');
+            //  console.log(this.selectedPage);
             //  console.log(this.toolbar);
             }
 
@@ -739,7 +756,7 @@ export class Blob extends React.Component {
                 isSelected: false
             });
             this.setState({compArray: this.compArray});
-            console.log(this.compArray);
+            //console.log(this.compArray);
             }
 
             toggleToolbar = () => {

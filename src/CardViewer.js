@@ -61,7 +61,7 @@ export default class CardViewer extends React.Component{
   }
 
   select = (key) => {
-    console.log(this.compArray[key].isSelected);
+    //console.log(this.compArray[key].isSelected);
     if(!this.compArray[key].isSelected){
       if(this.selected != null){
         this.compArray[this.selected].isSelected = false;
@@ -70,17 +70,17 @@ export default class CardViewer extends React.Component{
       this.compArray[key].isSelected = true;
       this.setState({compArray: this.compArray});
     }else{
-      console.log('hello');
+    //  console.log('hello');
       this.compArray[key].isSelected = false;
       this.selected = null;
       this.setState({compArray: this.compArray});
     }
-    console.log(this.compArray);
-    console.log('touch')
+  //  console.log(this.compArray);
+  //  console.log('touch')
   };
   render(){
     this.compArray = this.props.arr;
-    console.log(this.props.arr);
+  //  console.log(this.props.arr);
     var listArr = (() => this.compArray.map((function (object, index){
       return(
         <Card style={{padding: 0, margin: 0}}>
@@ -238,8 +238,8 @@ class CardStuff extends React.Component{
 
 
   render(){
-    console.log('hi')
-    console.log(this.props.arr);
+    //console.log('hi')
+    //console.log(this.props.arr);
     buttonsListArr = (() => this.props.arr.map((function (object, index){
       switch(object.type){
         case 'image':
@@ -267,8 +267,8 @@ class CardStuff extends React.Component{
             }
           }).bind(this))).call();
 
-    console.log(this.props.id);
-    console.log(this.props.viewHeight);
+    //console.log(this.props.id);
+  //  console.log(this.props.viewHeight);
     return(
       <View>
       <TapGestureHandler onHandlerStateChange={this._onSingleTap}>
