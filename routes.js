@@ -18,7 +18,7 @@ var transporter = nodemailer.createTransport({
   auth: secure.gmail
 });
 
-export default function sendMail(mailOptions){
+function sendMail(mailOptions){
   transporter.sendMail(mailOptions, function(error, info){
     if (error) {
       console.log(error);
@@ -55,15 +55,22 @@ app.get('/validate/:uuid', function(req, res) {
   mysqlx.getSession(config)
     .then(session => {
       const table = session.getSchema('allposts').getTable('emailverification');
-      return table.select().where(`uuid = "${req.params.uuid}"`).execute();
-    })
-    .then(result => {
-      var data = result.fetchAll();
-      if(data.length > 0){
-        table.update().where(`username = "${data[0][1]}"`).set('active', 1);
-      }
-      //console.log(data);
-    });
+      table.select().where(`uuid = "${req.params.uuid}"`).execute().then(result => {
+        var data = result.fetchAll();
+        if(data.length > 0){
+          const loginTable = session.getSchema('allposts').getTable('login');
+          loginTable.update().where(`username = "${data[0][1]}"`).set('active', 1).execute()
+          .then(() => {
+            console.log('verified');
+            table.delete().where(`uuid = "${req.params.uuid}"`).execute();
+            res.send({type: 'success', message: 'successfully verified email'});
+          });
+
+        }
+        //console.log(data);
+      });
+    }).catch(() => {res.send({type: 'error', message: 'invalid verification link'})});
+
 });
 
 app.get('/request/:uuid', function(req, res) {
@@ -109,7 +116,7 @@ app.post('/login/', function(req, res) {
               argon2.verify(compare, req.body[1]).then( boorean =>
                 {
                   if(boorean){
-
+                    res.send({type: 'success', message: 'successfully logged in'})
                   }else{
                     res.send({type: 'error', message: 'invalid username or password'})
                   }
@@ -137,6 +144,16 @@ app.post('/signup/',  function(req, res) {
               var hash = argon2.hash(req.body[1], { type: argon2id, salt }).then( hash =>
                 {
                   table.insert('username', 'hash', 'salt', 'active').values(req.body[0], hash, salt.toString('utf-8'), 0).execute();
+                  const verificationTable = session.getSchema('allposts').getTable('emailverification');
+                  var proxid = uuidv4();
+                  verificationTable.insert('uuid', 'email').values(proxid, req.body[0]).execute().then(() => {
+                    sendMail({
+                      from: secure.gmail.user,
+                      to: req.body[0],
+                      subject: 'Verify your Email',
+                      html: `<p>Use this link to verify your account: </p><a href="http://10.0.0.10:3000/validate/${proxid}">link</a>`
+                    });
+                  })
                   res.send({type: 'success', message: 'email registered'});
                 }
               )

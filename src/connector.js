@@ -45,7 +45,8 @@ async function requestLogin(username, password, url = 'http://10.0.0.10:3000/log
     body: JSON.stringify(proxdata) // body data type must match "Content-Type" header
   });
   const json = await response.json();
-  console.log(JSON.stringify(json));
+  return json;
+  //console.log(JSON.stringify(json));
 }
 
 async function requestSignup(username, password, url = 'http://10.0.0.10:3000/signup/') {
@@ -63,7 +64,8 @@ async function requestSignup(username, password, url = 'http://10.0.0.10:3000/si
     body: JSON.stringify(proxdata) // body data type must match "Content-Type" header
   });
   const json = await response.json();
-  console.log(JSON.stringify(json));
+  return json;
+//  console.log(JSON.stringify(json));
 }
 
 async function getData(uuid, url = 'http://10.0.0.10:3000/request/') {
